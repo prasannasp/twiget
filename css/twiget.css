@@ -1,9 +1,46 @@
-.twiget-widget ul li {
-    border-bottom: 1px solid #E3E3E3;
-    padding: 6px 0;
+#twiget-feed {
+    margin: auto;
+    padding: 5px 5px 5px 0px;
+    overflow:auto;
+}
+.twiget-article {
+    /* width:258px; */
+    border-bottom: 1px solid #CCC;
+    float:left;
+    padding: 5px 0px;
+}
+#twiget-ajax-loading {
+    padding: 5px 0px;
+    text-align: center;
+}
+.twiget-pic {
+    float: left;
+}
+ 
+.twiget-pic img {
+    float: left;
+    border-radius: 5px;
+    border:none;
+    margin-right: 5px;
+ 
+}
+
+.twiget-status {
+
+    display: block;
+}
+ 
+.twiget-text {
+    padding: 3px 0;
+    float: left;
+}
+ 
+.twiget-time {
+    font-size: 10px;
+    float: left;
 }
 
 #twigetfollow {
-    margin-top: 10px;
+    margin-top: 5px;
     text-align: right;
 }
