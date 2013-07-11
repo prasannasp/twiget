@@ -4,7 +4,6 @@
     overflow:auto;
 }
 .twiget-article {
-    /* width:258px; */
     border-bottom: 1px solid #CCC;
     float:left;
     padding: 5px 0px;
@@ -20,13 +19,12 @@
 .twiget-pic img {
     float: left;
     border-radius: 5px;
-    border:none;
+    border: none;
     margin-right: 5px;
  
 }
 
 .twiget-status {
-
     display: block;
 }
  

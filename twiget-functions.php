@@ -33,7 +33,14 @@ $twiget_args = array( 	'json_url' => get_home_url( '', '?twiget=json', '' ),  //
 			'link_target' => $link_target,
 			'show_client' => $show_client,
 			'show_username' => $show_username,
-			'profile_pic' => $profile_pic
+			'profile_pic' => $profile_pic,
+			'LessThanMin'  => __( 'less than a minute ago', 'twiget' ),
+			'AboutAMin'  => __( 'about a minute ago', 'twiget' ),
+			'MinutesAgo'  => __( '&nbsp;minutes ago', 'twiget' ),
+			'AnHourAgo'  => __( 'about an hour ago', 'twiget' ),
+			'HoursAgo'  => __( '&nbsp;hours ago', 'twiget' ),
+			'OneDayAgo'  => __( '1 day ago', 'twiget' ),
+			'DaysAgo'  => __( '&nbsp;days ago', 'twiget' )		
 		    );
    wp_localize_script( 'twiget-widget-js', 'TwigetArgs', $twiget_args );
 }

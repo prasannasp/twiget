@@ -109,19 +109,19 @@ jQuery(document).ready(function($) {
       delta = delta + (relative_to.getTimezoneOffset() * 60);
  
       if (delta < 60) {
-        return 'less than a minute ago';
+        return TwigetArgs.LessThanMin;
       } else if(delta < 120) {
-        return 'about a minute ago';
+        return TwigetArgs.AboutAMin;
       } else if(delta < (60*60)) {
-        return (parseInt(delta / 60)).toString() + ' minutes ago';
+        return (parseInt(delta / 60)).toString() + TwigetArgs.MinutesAgo;
       } else if(delta < (120*60)) {
-        return 'about an hour ago';
+        return TwigetArgs.AnHourAgo;
       } else if(delta < (24*60*60)) {
-        return 'about ' + (parseInt(delta / 3600)).toString() + ' hours ago';
+        return 'about ' + (parseInt(delta / 3600)).toString() + TwigetArgs.HoursAgo;
       } else if(delta < (48*60*60)) {
-        return '1 day ago';
+        return TwigetArgs.OneDayAgo;
       } else {
-        return (parseInt(delta / 86400)).toString() + ' days ago';
+        return (parseInt(delta / 86400)).toString() + TwigetArgs.DaysAgo;
       }
     }
  
