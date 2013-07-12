@@ -59,20 +59,18 @@ class Twiget_Twitter_Widget extends WP_Widget{
 		extract( $args );
 	
 		$twiget_options = get_option('twiget_options');
-		$twiget_username = $twiget_options['user_name'];
-		if (isset($twiget_options['followers_count'])) { $followers_count = $twiget_options['followers_count']; }
 
 		$twiget_title = apply_filters( 'twiget_widget_title', empty($instance['twiget_title']) ? __( 'Latest tweets', 'twiget' ) : $instance['twiget_title'], $instance, $this->id_base);	
 		
 		$wrapper_id = 'tweet-wrap-' . $args['widget_id'];
 		
-		$twiget_follower_count_attr = (isset($followers_count) == 1) ? 'data-show-count="true"' : 'data-show-count="false"';
+		$twiget_follower_count_attr = (isset($twiget_options['followers_count']) == 1) ? 'data-show-count="true"' : 'data-show-count="false"';
 
 		echo $args['before_widget'].$args['before_title'].$twiget_title.$args['after_title'];
 		?>
         	<div id="twiget-feed"></div>
         	 <p id="twigetfollow">
-<a href="https://twitter.com/<?php echo $twiget_username; ?>" class="twitter-follow-button" <?php echo $twiget_follower_count_attr; ?> data-width="100%" data-align="right"><?php printf( __( 'Follow %s', 'twiget' ), '@' . $twiget_username ); ?></a>
+<a href="https://twitter.com/<?php echo $twiget_username; ?>" class="twitter-follow-button" <?php echo $twiget_follower_count_attr; ?> data-width="100%" data-align="right"><?php printf( __( 'Follow %s', 'twiget' ), '@' . $twiget_options['user_name'] ); ?></a>
 <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
 </p>
             <?php do_action( 'twiget_twitter_widget' ); ?>

@@ -20,20 +20,15 @@ add_action( 'wp_enqueue_scripts', 'twiget_stylesheet' );
 ** localize scripts so that the twiget.js can access plugin options
 */
 function twiget_localize_scripts() {
-$options = get_option('twiget_options');
-$tweet_count = $options['tweet_count'];
-$link_target = $options['link_target'];
-$show_client = $options['show_client'];
-$show_username = $options['show_username'];
-$profile_pic = $options['profile_pic'];
+$twiget_options = get_option('twiget_options');
 
-$twiget_args = array( 	'json_url' => get_home_url( '', '?twiget=json', '' ),  //plugins_url( 'twiget-json.php' , __FILE__ ),
+$twiget_args = array( 	'json_url' => get_home_url( '', '?twiget=json', '' ), 
 			'ajax_loader' => plugins_url( 'images/ajax-loader.gif' , __FILE__ ),
-			'tweet_count' => $tweet_count,
-			'link_target' => $link_target,
-			'show_client' => $show_client,
-			'show_username' => $show_username,
-			'profile_pic' => $profile_pic,
+			'tweet_count' => $twiget_options['tweet_count'],
+			'link_target' => isset($twiget_options['link_target']),
+			'show_client' => isset($twiget_options['show_client']),
+			'show_username' => isset($twiget_options['show_username']),
+			'profile_pic' => isset($twiget_options['profile_pic']),
 			'LessThanMin'  => __( 'less than a minute ago', 'twiget' ),
 			'AboutAMin'  => __( 'about a minute ago', 'twiget' ),
 			'MinutesAgo'  => __( '&nbsp;minutes ago', 'twiget' ),
@@ -63,17 +58,10 @@ function twiget_get_connection($cons_key, $cons_secret, $oauth_token, $oauth_tok
 function twiget_get_tweets_and_encode() { 
 
 	$twiget_options = get_option('twiget_options');
- 
-	$twitteruser = $twiget_options['user_name']; 
-	$notweets = $twiget_options['tweet_count']; 
-	$consumerkey = $twiget_options['consumer_key'];
-	$consumersecret = $twiget_options['consumer_secret']; 
-	$accesstoken = $twiget_options['access_token']; 
-	$accesstokensecret = $twiget_options['access_token_secret']; 
 	
-   $connection = twiget_get_connection($consumerkey, $consumersecret, $accesstoken, $accesstokensecret);
+   $connection = twiget_get_connection($twiget_options['consumer_key'], $twiget_options['consumer_secret'], $twiget_options['access_token'], $twiget_options['access_token_secret']);
  
-   $tweets = $connection->get("https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=".$twitteruser."&include_rts=true&count=".$notweets);
+   $tweets = $connection->get("https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=".$twiget_options['user_name']."&include_rts=true&count=".$twiget_options['tweet_count']);
 
 	echo json_encode($tweets);
 }
