@@ -1,5 +1,10 @@
 <?php
-// Render the Plugin options form
+/**
+ * Render the Plugin options form
+ *
+ * @package Twiget Twitter Widget
+ * @since 1.1
+ */
 function twiget_render_form() {
 	?>
 	<div class="wrap">
@@ -12,18 +17,6 @@ function twiget_render_form() {
 
 			<table class="form-table">
 
-				<tr>
-					<th scope="row"><?php _e( 'Twitter Username', 'twiget' ); ?></th>
-					<td>
-						<input type="text" size="50" name="twiget_options[user_name]" value="<?php if (isset($options['user_name'])) { echo $options['user_name']; } ?>" />
-					</td>
-				</tr>
-				<tr>
-					<th scope="row"><?php _e( 'Number of tweets to display', 'twiget' ); ?></th>
-					<td>
-						<input type="number" size="50" name="twiget_options[tweet_count]" value="<?php if (isset($options['tweet_count'])) { echo $options['tweet_count']; } ?>" />
-					</td>
-				</tr>
 				<tr>
 					<th scope="row"><?php _e( 'Consumer Key', 'twiget' ); ?></th>
 					<td>
@@ -46,21 +39,6 @@ function twiget_render_form() {
 					<th scope="row"><?php _e( 'Access Token Secret', 'twiget' ); ?></th>
 					<td>
 						<input type="text" size="50" name="twiget_options[access_token_secret]" value="<?php if (isset($options['access_token_secret'])) { echo $options['access_token_secret']; } ?>" />
-					</td>
-				</tr>
-				
-				<tr valign="top">
-				<th scope="row"><?php _e( 'Display Options', 'twiget' ); ?></th>
-					<td>
-						<label><input name="twiget_options[link_target]" type="checkbox" value="1" <?php if (isset($options['link_target'])) { checked('1', $options['link_target']); } ?> /> <?php _e( 'Open links in new window', 'twiget' ); ?></label><br />
-
-						<label><input name="twiget_options[followers_count]" type="checkbox" value="1" <?php if (isset($options['followers_count'])) { checked('1', $options['followers_count']); } ?> /> <?php _e( 'Show followers count', 'twiget' ); ?></label><br />
-
-						<label><input name="twiget_options[profile_pic]" type="checkbox" value="1" <?php if (isset($options['profile_pic'])) { checked('1', $options['profile_pic']); } ?> /> <?php _e( 'Show profile picture', 'twiget' ); ?></label><br />
-
-						<label><input name="twiget_options[show_username]" type="checkbox" value="1" <?php if (isset($options['show_username'])) { checked('1', $options['show_username']); } ?> /> <?php _e( 'Show twitter username with each tweet', 'twiget' ); ?></label><br />
-
-						<label><input name="twiget_options[show_client]" type="checkbox" value="1" <?php if (isset($options['show_client'])) { checked('1', $options['show_client']); } ?> /> <?php _e( 'Show twitter client used. <em>(Example: via Twitter for Android)', 'twiget' ); ?></em> </label><br />
 					</td>
 				</tr>
 				

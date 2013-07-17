@@ -1,17 +1,15 @@
-#twiget-feed {
+.twiget-feed {
     margin: auto;
     padding: 5px 5px 5px 0px;
     overflow:auto;
 }
 .twiget-article {
     border-bottom: 1px solid #CCC;
-    float:left;
+    float: left;
     padding: 5px 0px;
+    width: 100%;
 }
-#twiget-ajax-loading {
-    padding: 5px 0px;
-    text-align: center;
-}
+
 .twiget-pic {
     float: left;
 }
@@ -24,6 +22,10 @@
  
 }
 
+.twiget-profile-link {
+    vertical-align: middle;
+}
+
 .twiget-status {
     display: block;
 }
@@ -31,6 +33,7 @@
 .twiget-text {
     padding: 3px 0;
     float: left;
+    width: 100%;
 }
  
 .twiget-time {
