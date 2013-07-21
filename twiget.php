@@ -39,6 +39,8 @@ add_action('plugins_loaded', 'load_twiget_plugin_textdomain');
 define( 'TWIGET_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 require_once TWIGET_PLUGIN_PATH . 'twiget-options-form.php';
 
+require_once TWIGET_PLUGIN_PATH . 'twiget-get-tweets.php';
+
 /**
  * Register custom Twitter widgets.
  *
@@ -51,47 +53,6 @@ $twiget_username = '';
 $twiget_tweetcount = 1;
 
 class Twiget_Twitter_Widget extends WP_Widget{
-
-/*
- * Get connection to Twitter OAuth. Requires twitteroauth.php in lib
- *
- * @package Twiget Twitter Widget
- * @since 1.1
-*/
-	function twiget_get_connection($cons_key, $cons_secret, $oauth_token, $oauth_token_secret) {
-  		require_once TWIGET_PLUGIN_PATH . 'lib/twitteroauth.php';
-  		$connection = new TwitterOAuth($cons_key, $cons_secret, $oauth_token, $oauth_token_secret);
-  		return $connection;
-	}
-
-/*
- * Convert twitter created_at time format to ago format - function taken from http://webcodingeasy.com/PHP/Convert-twitter-createdat-time-format-to-ago-format
- *
- * @package Twiget Twitter Widget
- * @since 1.1
-*/
-	function twiget_time($a) { 
-		$b = strtotime("now"); 
-		$c = strtotime($a); 
-		$d = $b - $c;
-		$minute = 60; 
-		$hour = $minute * 60; 
-		$day = $hour * 24; 
-		$week = $day * 7; 
-
-		if(is_numeric($d) && $d > 0) { 
-			if($d < 3) return "right now";
-			if($d < $minute) return floor($d) . " seconds ago";
-			if($d < $minute * 2) return "about 1 minute ago"; 
-			if($d < $hour) return floor($d / $minute) . " minutes ago";
-			if($d < $hour * 2) return "about 1 hour ago"; 
-			if($d < $day) return floor($d / $hour) . " hours ago"; 
-			if($d > $day && $d < $day * 2) return "yesterday"; 
-			if($d < $day * 365) return floor($d / $day) . " days ago"; 
-			return "over a year ago"; 
-	} 
-
-} 
 	
 	function Twiget_Twitter_Widget(){
 		// Widget settings
@@ -104,9 +65,10 @@ class Twiget_Twitter_Widget extends WP_Widget{
 		$this->WP_Widget( 'twiget-widget', 'TwiGet Twitter Widget', $widget_ops, $control_ops);
 		
 		/* Enqueue the twitter script and css if widget is active */
-		if ( is_active_widget( false, false, $this->id_base, true ) && ! is_admin() )
-			
+		if ( is_active_widget( false, false, $this->id_base, true ) && ! is_admin() ) {
+			wp_enqueue_script( 'twiget-widget-js', plugins_url( '/js/twiget.js' , __FILE__ ), array(), '', false );
 			wp_enqueue_style( 'twiget-widget-css', plugins_url( '/css/twiget.css' , __FILE__ ), array(), '', false );
+		}
 	}
 	
 	function widget( $args, $instance ){		// This function displays the widget
@@ -134,85 +96,39 @@ class Twiget_Twitter_Widget extends WP_Widget{
 		$wrapper_id = 'tweet-wrap-' . $args['widget_id'];
 		
 		$twiget_follower_count_attr = ( $twiget_followercount ) ? 'data-show-count="true"' : 'data-show-count="false"';
-		
-		$twiget_link_attr = ( $twiget_new_window ) ? 'target="_blank"' : 'target="_self"';
 	
-		$hide_replies_attr = ( $twiget_hide_replies ) ? 'exclude_replies=true' : 'exclude_replies=false';
+		$hide_replies_attr = ( $twiget_hide_replies ) ? 'true' : 'false';
 		
 		echo $args['before_widget'].$args['before_title'].$twiget_title.$args['after_title'];
-		echo '<div class="twiget-feed">';
-		
-		$twiget_options = get_option('twiget_options');
-			
-		$req_opts = array( 'consumer_key', 'consumer_secret', 'access_token', 'access_token_secret' );
-		$api_exists = true;
-		foreach ( $req_opts as $req_opt ) {
-			if ( ! array_key_exists( $req_opt, $twiget_options ) ) {
-			$api_exists = false;
-			break;
-			} 
-			elseif ( ! $twiget_options[$req_opt] ) {
-			$api_exists = false;
-			break;
-			}
-		}
-	if ( $api_exists ) {
-	
-  	$connection = $this->twiget_get_connection($twiget_options['consumer_key'], $twiget_options['consumer_secret'], $twiget_options['access_token'], $twiget_options['access_token_secret']);
- 
-   $tweets = $connection->get("https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=".$twiget_username."&include_rts=true&count=".$twiget_tweetcount."&".$hide_replies_attr);
-	
-		foreach ($tweets as $item) {
-
-                $username = $item->user->screen_name;
-                $profileimageurl = $item->user->profile_image_url_https;
-                $status = $item->text;
-                $id = $item->id_str;
-                $source = $item->source;
-
-		//Get status, username, profile picture URL etc., of retweets
-    		if( isset( $item->retweeted_status ) ) {
-                	$username = $item->retweeted_status->user->screen_name;                
-			$profileimageurl = $item->retweeted_status->user->profile_image_url_https;
-                	$status = $item->retweeted_status->text;
-                	$id = $item->retweeted_status->id_str;
-			$source = $item->retweeted_status->source;
-    		}
-		
-$status = preg_replace('/([\w]+\:\/\/[\w-?&;#~=.\/\@]+[\w\/])/', '<a '.$twiget_link_attr.' href="$1">$1</a>', $status);
-$status = preg_replace('/#([A-Za-z0-9\/.]*)/', '<a '.$twiget_link_attr.' href="http://twitter.com/#!/search/%23$1">#$1</a>', $status);
-$status = preg_replace('/@([A-Za-z0-9\/.]*)/', '<a '.$twiget_link_attr.' href="http://www.twitter.com/$1">@$1</a>', $status);
-
-$tweet = '<div class="twiget-article">';
-if( $profile_pic ) {
-$tweet .= '<span class="twiget-pic"><a '.$twiget_link_attr.' href="https://twitter.com/'.$username.'" target="_blank"><img src="'.$profileimageurl.'"images/twitter-feed-icon.png" width="32" height="32" alt="twitter icon" /></a></span>';
-}
-if( $show_username ) {
-$tweet .= '<span class="twiget-profile-link"><a '.$twiget_link_attr.' href="https://twitter.com/'.$username.'" >@'.$username.'</a></span><br />';
-}
-$tweet .= '<div class="twiget-text">';
-$tweet .= '<span class="twiget-status">'.$status.'</span>';
-$tweet .= '<span class="twiget-time"><a '.$twiget_link_attr.' href="https://twitter.com/'.$username.'/status/'.$id.'" target="_blank">'.$this->twiget_time("$item->created_at").'</a></span>';
-if( $twitter_client ) {
-$tweet .= '<span class="twiget-client">&nbsp;via '.$source.'</span>';
-}
-$tweet .= '</div><!-- .twiget-text -->';
-$tweet .= '</div><!-- .twiget-article -->';
-echo $tweet;
-		}
-	}
-	else
-	_e( 'Error retrieving tweets', 'twiget' );
 		?>
-	    </div><!-- .twiget-feed -->
+		
+		<div class="twiget-feed">
+		<ul id="<?php echo $wrapper_id; ?>">
+            	<li><img src="<?php echo '' .plugins_url( '/images/ajax-loader.gif' , __FILE__ ). ''; ?>" width="16" height="16" alt="" /> <?php _e( 'Loading tweets...', 'twiget' ); ?></li>
+            </ul>
             <p id="twigetfollow">
             	<a href="https://twitter.com/<?php echo $twiget_username; ?>" class="twitter-follow-button" <?php echo $twiget_follower_count_attr; ?> data-width="100%" data-align="right"><?php printf( __( 'Follow %s', 'twiget' ), '@' . $twiget_username ); ?></a>
 			<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
             </p>
-            
+            <script type="text/javascript">
+                jQuery(document).ready(function($) {
+                    var tweetOptions = {
+                            screen_name: '<?php echo $twiget_username; ?>',
+                            count: <?php echo $twiget_tweetcount; ?>,
+                            include_rts: true,
+							exclude_replies: <?php echo $hide_replies_attr; ?>
+                    };
+                    $.getJSON( '<?php echo get_home_url( '', '?twiget=json', '' ); ?>', tweetOptions, function(data){
+                       TwigetTwitter( data, '<?php echo $wrapper_id; ?>', {<?php if ( $twiget_new_window ) echo 'newwindow:true,'; 
+																		         if ( $profile_pic ) echo 'profilepic:true,'; 
+																			     if ( $show_username ) echo 'showusername:true,';
+																			     if ( $twitter_client ) echo 'twitterclient:true,'; ?>});
+                    });
+                });
+            </script>
             <?php do_action( 'twiget_twitter_widget' ); ?>
         <?php echo $args['after_widget']; ?>
-        
+        </div>
         <?php
 	}
 	
@@ -280,7 +196,7 @@ echo $tweet;
          <p>
         	<label for="<?php echo $this->get_field_id( 'twiget_hide_replies' ); ?>"><?php _e( 'Hide @replies', 'twiget' ); ?></label>
 			<input id="<?php echo $this->get_field_id( 'twiget_hide_replies' ); ?>" type="checkbox" name="<?php echo $this->get_field_name( 'twiget_hide_replies' ); ?>" value="true" <?php checked( $instance['twiget_hide_replies'] ); ?> /><br />
-			<span class="description"><?php $showtweetcount = $instance['twiget_tweetcount']; printf( __('Note: Selecting this sometimes result in showing less than %s tweets', 'twiget' ), $showtweetcount ); ?></span>
+			<span class="description"><?php $showtweetcount = $instance['twiget_tweetcount']; printf( __('Note: Selecting this sometimes result in showing less than %d tweets', 'twiget' ), $showtweetcount ); ?></span>
         </p>
         <p>
         	<label for="<?php echo $this->get_field_id( 'twiget_new_window' ); ?>"><?php _e( 'Open links in new window', 'twiget' ); ?></label>
@@ -301,17 +217,17 @@ function twiget_load_widgets(){
 add_action( 'widgets_init', 'twiget_load_widgets' );
 
 /*
-** Thanks David Gwyer for Plugin Options Starter Kit plugin!
-*/
-
-// Delete options table entries ONLY when plugin deactivated AND deleted
-function twiget_delete_plugin_options() {
+ ** Delete options table entries ONLY when plugin deactivated AND deleted (twiget-options-form.php)
+ */
+function twiget_delete_plugin_options(){
 	delete_option('twiget_options');
 }
 register_uninstall_hook(__FILE__, 'twiget_delete_plugin_options');
 
-// Define default option settings
-function twiget_add_defaults() {
+/* 
+ ** Define default option settings
+ */ 
+function twiget_add_defaults(){
 	$tmp = get_option('twiget_options');
     if(($tmp['twiget_default_options_db']=='1')||(!is_array($tmp))) {
 		delete_option('twiget_options');
@@ -322,20 +238,26 @@ function twiget_add_defaults() {
 }
 register_activation_hook(__FILE__, 'twiget_add_defaults');
 
-// Init plugin options to white list our options
-function twiget_init() {
+/* 
+ ** Init plugin options to white list our options
+ */ 
+function twiget_init(){
 	register_setting( 'twiget_plugin_options', 'twiget_options', 'twiget_validate_options' );
 }
 add_action('admin_init', 'twiget_init' );
 
-// Add menu page
-function twiget_add_options_page() {
+/*
+ ** Add menu page (wp-admin/options-general.php?page=twiget/twiget.php)
+ */
+function twiget_add_options_page(){
 	add_options_page('Twiget Twitter Plugin Settings', 'Twiget Settings', 'manage_options', __FILE__, 'twiget_render_form');
 }
 add_action('admin_menu', 'twiget_add_options_page');
 
-// Sanitize and validate input. Accepts an array, return a sanitized array.
-function twiget_validate_options($input) {
+/*
+ ** Sanitize and validate input. Accepts an array, return a sanitized array.
+ */
+function twiget_validate_options($input){
 	 // strip html from textboxes
 	$input['consumer_key'] =  wp_filter_nohtml_kses($input['consumer_key']);
 	$input['consumer_secret'] =  wp_filter_nohtml_kses($input['consumer_secret']);
@@ -344,8 +266,10 @@ function twiget_validate_options($input) {
 	return $input;
 }
 
-// Donate link on manage plugin page
-function twiget_pluginspage_links( $links, $file ) {
+/* 
+ ** More plugins link on manage plugin page
+ */
+function twiget_pluginspage_links( $links, $file ){
 
 $plugin = plugin_basename (__FILE__);
 
@@ -364,8 +288,10 @@ return $links;
 	}
 add_filter( 'plugin_row_meta', 'twiget_pluginspage_links', 10, 2 );
 
-// Display a Support forum link on the main Plugins page
-function twiget_plugin_action_links( $links, $file ) {
+/*
+ ** Display a Support forum link on the main Plugins page
+ */
+function twiget_plugin_action_links( $links, $file ){
 
 	if ( $file == plugin_basename( __FILE__ ) ) {
 		$twiget_link1 = '<a href="http://forum.prasannasp.net/forum/plugin-support/twiget/" title="'.esc_attr__('TwiGet Twitter Widget support', 'twiget').'" target="_blank">'.__('Support', 'twiget').'</a>';
@@ -405,3 +331,52 @@ function twiget_admin_notice_missing_api(){
     <?php
 }
 add_action( 'admin_notices', 'twiget_admin_notice_missing_api' );
+
+
+/*
+** Tell WordPress to process "?twiget" custom URL parameter
+ *
+ * @package Twiget Twitter Widget
+ * @since 1.1
+*/
+function twiget_query_vars($vars){
+    $vars[] = 'twiget';
+    return $vars;
+}
+add_filter('query_vars', 'twiget_query_vars');
+
+/*
+** Call twiget_get_tweets_and_encode() function to return JSON data in site.url/?twiget=json
+ *
+ * @package Twiget Twitter Widget
+ * @since 1.1
+*/
+function twiget_query_var_check(){
+    if( get_query_var('twiget') == 'json' ) {
+	twiget_get_tweets_and_encode();
+    	exit;
+    }
+}
+add_action('template_redirect', 'twiget_query_var_check');
+
+/*
+** Localize timestamp strings
+ *
+ * @package Twiget Twitter Widget
+ * @since 1.1
+*/
+
+function twiget_localize_scripts(){
+	$twiget_args = array( 	
+			'About'  => __( 'about&nbsp;', 'twiget' ),
+			'LessThanMin'  => __( 'less than a minute ago', 'twiget' ),
+			'AboutAMin'  => __( 'about a minute ago', 'twiget' ),
+			'MinutesAgo'  => __( '&nbsp;minutes ago', 'twiget' ),
+			'AnHourAgo'  => __( 'about an hour ago', 'twiget' ),
+			'HoursAgo'  => __( '&nbsp;hours ago', 'twiget' ),
+			'OneDayAgo'  => __( '1 day ago', 'twiget' ),
+			'DaysAgo'  => __( '&nbsp;days ago', 'twiget' )		
+		    );
+   wp_localize_script( 'twiget-widget-js', 'TwigetArgs', $twiget_args );
+}
+add_action( 'wp_enqueue_scripts', 'twiget_localize_scripts' );
